@@ -53,6 +53,17 @@ public struct VehicleAnalyzeData {
     public float   mass;
 };
 
+[System.Serializable]
+public struct VehiclePointLoad {
+    public float front_grip;
+    public float rear_grip;
+    public float left_grip;
+    public float right_grip;
+    public float accel;
+    public float jump;
+    public float weight;
+}
+
 public class PartixDll : MonoBehaviour {
     [NonSerialized] public static bool initialized = false;
 
@@ -109,6 +120,12 @@ public class PartixDll : MonoBehaviour {
     [DllImport("partix_dll")]
     public static extern void GetWireFrameIndices(
         IntPtr world, IntPtr b, [In, Out] int[] buffer);
+    [DllImport("partix_dll")]
+    public static extern void GetPointLoads(
+        IntPtr world, IntPtr b, [In, Out] VehiclePointLoad[] buffer);
+    [DllImport("partix_dll")]
+    public static extern void SetPointLoads(
+        IntPtr world, IntPtr b, [In, Out] VehiclePointLoad[] buffer);
 
     [DllImport("partix_dll")]
     public static extern void AnalyzeVehicle(
@@ -128,6 +145,10 @@ public class PartixDll : MonoBehaviour {
         IntPtr              b,
         ref VehicleParameter vehicleParameter,
         Vector3             accel);
+
+    [DllImport("partix_dll")]
+    public static extern void RotateEntity(
+        IntPtr world, IntPtr b, float w, float x, float y, float z);
 
     void Awake() {
         SetDebugLog();

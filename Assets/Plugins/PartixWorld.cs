@@ -63,6 +63,17 @@ public class PartixWorld : MonoBehaviour {
         return a;
     }
 
+    public VehiclePointLoad[] GetPointLoads(IntPtr body) {
+        int c = PartixDll.GetWireFrameVertexCount(nativeWorld, body);
+        VehiclePointLoad[] a = new VehiclePointLoad[c];
+        PartixDll.GetPointLoads(nativeWorld, body, a);
+        return a;
+    }
+
+    public void SetPointLoads(IntPtr body, VehiclePointLoad[] loads) {
+        PartixDll.SetPointLoads(nativeWorld, body, loads);
+    }
+
     public void AnalyzeVehicle(
         IntPtr              b,
         ref VehicleParameter vehicleParameter,
@@ -93,6 +104,14 @@ public class PartixWorld : MonoBehaviour {
             ref vehicleParameter,
             accel);
     }
+
+    public void RotateEntity(IntPtr b, Quaternion q) {
+        PartixDll.RotateEntity(
+            nativeWorld,
+            b,
+            q.w, q.x, q.y, q.z);
+    }
+
 
 
 }

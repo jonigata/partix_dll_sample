@@ -8,12 +8,15 @@ using UnityEngine;
 [RequireComponent (typeof(MeshFilter))]
 [RequireComponent (typeof(PartixSoftVolume))]
 public class PartixWireFrame : MonoBehaviour {
-    public Material material;
+    public bool renderWeight;
+    public bool renderAccel;
 
     PartixWorld world;
     PartixSoftVolume volume;
     MeshFilter meshFilter;
     Mesh mesh;
+
+    Color[] colors;
 
     void Awake() {
         world = FindObjectOfType<PartixWorld>();
@@ -39,9 +42,21 @@ public class PartixWireFrame : MonoBehaviour {
         };
 */
         if (!volume.Ready()) { return; }
+        
+
         int[] indices = volume.GetWireFrameIndices();
         mesh.vertices = volume.GetWireFrameVertices();
-        meshFilter.mesh.SetIndices(indices, MeshTopology.Lines, 0);
+        mesh.SetIndices(indices, MeshTopology.Lines, 0);
+
+        VehiclePointLoad[] vpl = volume.GetPointLoads();
+        colors = new Color[vpl.Length];
+        for (int i = 0 ; i < colors.Length ; i++) {
+            var c = new Color(0, 0, 0);
+            if (renderWeight) c.r = vpl[i].weight;
+            if (renderAccel) c.b = vpl[i].accel;
+            colors[i] = c;
+        }
+        mesh.colors = colors;
     }
 
 }

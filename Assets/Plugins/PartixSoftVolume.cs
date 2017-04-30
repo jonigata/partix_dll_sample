@@ -14,8 +14,8 @@ public class PartixSoftVolume : MonoBehaviour {
 
     PartixWorld world;
     IntPtr nativePartixSoftVolume = IntPtr.Zero;
-    Matrix4x4 prevOrientation;
-    Matrix4x4 currOrientation;
+    public Matrix4x4 prevOrientation;
+    public Matrix4x4 currOrientation;
     float sensoryBalance = 0;
 
     void Awake() {
@@ -76,6 +76,16 @@ public class PartixSoftVolume : MonoBehaviour {
         return world.GetWireFrameIndices(nativePartixSoftVolume);
     }
 
+    public VehiclePointLoad[] GetPointLoads() {
+        Assert.IsTrue(nativePartixSoftVolume != IntPtr.Zero);
+        return world.GetPointLoads(nativePartixSoftVolume);
+    }
+
+    public void SetPointLoads(VehiclePointLoad[] loads) {
+        Assert.IsTrue(nativePartixSoftVolume != IntPtr.Zero);
+        world.SetPointLoads(nativePartixSoftVolume, loads);
+    }
+
     public void AnalyzeVehicle() {
         Assert.IsTrue(nativePartixSoftVolume != IntPtr.Zero);
         world.AnalyzeVehicle(
@@ -95,6 +105,10 @@ public class PartixSoftVolume : MonoBehaviour {
             nativePartixSoftVolume,
             ref vehicleParameter,
             accel);
+    }
+
+    public void Rotate(Quaternion q) {
+        world.RotateEntity(nativePartixSoftVolume, q);
     }
 
 }
