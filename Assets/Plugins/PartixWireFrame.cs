@@ -10,6 +10,7 @@ using UnityEngine;
 public class PartixWireFrame : MonoBehaviour {
     public bool renderWeight;
     public bool renderAccel;
+    public bool renderFriction;
 
     PartixWorld world;
     PartixSoftVolume volume;
@@ -53,6 +54,7 @@ public class PartixWireFrame : MonoBehaviour {
         for (int i = 0 ; i < colors.Length ; i++) {
             var c = new Color(0, 0, 0);
             if (renderWeight) c.r = vpl[i].weight;
+            if (renderFriction) c.g = vpl[i].friction;
             if (renderAccel) c.b = vpl[i].accel;
             colors[i] = c;
         }

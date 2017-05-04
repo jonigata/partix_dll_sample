@@ -10,6 +10,7 @@ public class PigController : MonoBehaviour {
     [SerializeField] Vector3 velocity;
     [SerializeField] float accelFactor = 2.0f;
     [SerializeField] ManualCamera manualCamera;
+    [SerializeField] Vector3 liftUp;
 
     const float epsilon = 1.0e-6f;
 
@@ -47,12 +48,17 @@ public class PigController : MonoBehaviour {
         // weightê›íË
         for (int i = 0 ; i < vertices.Length ; i++) {
             Vector3 v = vertices[i];
+            Vector3 np = new Vector3(
+                (v.x - bbmin.x) / bbw.x,
+                (v.y - bbmin.y) / bbw.y,
+                (v.z - bbmin.z) / bbw.z);
+
             float w = 1.0f;
-            float z = 1.0f - (v.z - bbmin.z) / bbw.z;
-            float y = 1.0f - (v.y - bbmin.y) / bbw.y;
+            float z = 1.0f - np.z;
+            float y = 1.0f - np.y;
             w += z * y * 4.0f;
             loads[i].weight = w * 0.2f;
-            loads[i].friction = 0.8f;
+            loads[i].friction = w * 0.2f;
         }
         sv.SetPointLoads(loads);
     }
@@ -70,7 +76,8 @@ public class PigController : MonoBehaviour {
              sv.vehicleAnalyzeData.rear_grip) * 0.5f;
 
         UpdateAccel(a);
-        sv.AccelerateVehicle(a * accelFactor * grip);
+        sv.AccelerateVehicle(
+            a * accelFactor * grip + a.magnitude * liftUp);
 
         sv.Rotate(GetBalanceRotation());
         sv.Rotate(GetTurningRotation());
