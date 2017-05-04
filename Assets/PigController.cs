@@ -9,6 +9,7 @@ public class PigController : MonoBehaviour {
     [SerializeField] Vector3 accel;
     [SerializeField] Vector3 velocity;
     [SerializeField] float accelFactor = 2.0f;
+    [SerializeField] ManualCamera manualCamera;
 
     const float epsilon = 1.0e-6f;
 
@@ -40,8 +41,6 @@ public class PigController : MonoBehaviour {
             if (bbmax.y < v.y) { bbmax.y = v.y; }
             if (bbmax.z < v.z) { bbmax.z = v.z; }
         }
-        Debug.Log(bbmin);
-        Debug.Log(bbmax);
 
         Vector3 bbw = bbmax - bbmin;
 
@@ -53,19 +52,28 @@ public class PigController : MonoBehaviour {
             float y = 1.0f - (v.y - bbmin.y) / bbw.y;
             w += z * y * 4.0f;
             loads[i].weight = w * 0.2f;
+            loads[i].friction = 0.8f;
         }
         sv.SetPointLoads(loads);
     }
 
     void Update() {
         if (!sv.Ready()) { return; }
+        
         Vector2 i = InputManager.ActiveDevice.LeftStick;
         Vector3 a = new Vector3(i.x, 0, i.y);
-        UpdateAccel(a);
-        sv.AccelerateVehicle(a * accelFactor);
 
-        Quaternion q = GetBalanceRotation();
-        sv.Rotate(q);
+        a = manualCamera.rotateConsideringCamera(a);
+
+        float grip = 
+            (sv.vehicleAnalyzeData.front_grip + 
+             sv.vehicleAnalyzeData.rear_grip) * 0.5f;
+
+        UpdateAccel(a);
+        sv.AccelerateVehicle(a * accelFactor * grip);
+
+        sv.Rotate(GetBalanceRotation());
+        sv.Rotate(GetTurningRotation());
     }
 
     void UpdateAccel(Vector3 input) {
@@ -116,7 +124,6 @@ public class PigController : MonoBehaviour {
 
         float angle = AxisAngleOnAxisPlane(
             Vector3.zero, a.back, Vector3.up, a.front);
-        Debug.Log(angle);
 
         if (a.left_grip == 0 && 0 < a.right_grip) {
             // ¶‘«‚ª•‚‚¢‚Ä‚é‚Æ‚«‚Í‰E‚É‚ÍŒX‚©‚È‚¢
@@ -133,11 +140,23 @@ public class PigController : MonoBehaviour {
 
         float angleMax =
             sv.vehicleParameter.balance_angle_max * world.deltaTime;
-        Debug.Log(angleMax);
         angle = Mathf.Clamp(angle, -angleMax, angleMax);
         return Quaternion.AngleAxis(angle, a.front);
+    }
 
-        // return q;
+    Quaternion GetTurningRotation() {
+        var a = sv.vehicleAnalyzeData;
+        
+        // Žp¨‚ª•œŒ³’†‚¾‚Á‚½‚ç‰½‚à‚µ‚È‚¢
+        Vector3 an = accel.normalized;
+        float pa = Vector3.Dot(an, a.old_front);
+        float ca = Vector3.Dot(an, a.front);
+        if (pa < ca) { return Quaternion.identity; }
+
+        Quaternion q =  Quaternion.FromToRotation(
+            sv.vehicleAnalyzeData.front, accel.normalized);
+        return limitRotation(
+            q, sv.vehicleParameter.turning_angle_max * world.deltaTime);
     }
 
     // http://tiri-tomato.hatenadiary.jp/entry/20121013/1350121871
@@ -149,6 +168,17 @@ public class PigController : MonoBehaviour {
 	return 
             Mathf.Acos(Mathf.Clamp(Vector3.Dot(fromDirection,toDirectionProjected),-1f,1f)) *
             (Vector3.Dot(Vector3.Cross(axis,fromDirection), toDirectionProjected) < 0f ? -Mathf.Rad2Deg : Mathf.Rad2Deg);
+    }
+
+    Quaternion limitRotation(Quaternion q, float max) {
+        float angle;
+        Vector3 axis;
+        q.ToAngleAxis(out angle, out axis);
+        if (max < angle) {
+            return Quaternion.AngleAxis(max, axis);
+        } else {
+            return q;
+        }
     }
 }
 

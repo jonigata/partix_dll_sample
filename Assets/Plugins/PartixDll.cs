@@ -5,6 +5,13 @@ using System.Runtime.InteropServices;
 using UnityEngine;
 
 [System.Serializable]
+public struct Triangle {
+    int i0;
+    int i1;
+    int i2;
+};
+
+[System.Serializable]
 public struct VehicleParameter {
     public float total_grip_coefficient;
     public float front_grip_coefficient;
@@ -62,6 +69,7 @@ public struct VehiclePointLoad {
     public float accel;
     public float jump;
     public float weight;
+    public float friction;
 }
 
 public class PartixDll : MonoBehaviour {
@@ -90,11 +98,18 @@ public class PartixDll : MonoBehaviour {
 
     [DllImport("partix_dll")]
     public static extern IntPtr CreateSoftVolume(
-        IntPtr world, string tcf, Vector3 position, float scale);
+        IntPtr world, string tcf, Vector3 position, float scale, float mass);
 
     [DllImport("partix_dll")]
     public static extern IntPtr CreateVehicle(
-        IntPtr world, string tcf, Vector3 position, float scale);
+        IntPtr world, string tcf, Vector3 position, float scale, float mass);
+
+    [DllImport("partix_dll")]
+    public static extern IntPtr CreateSoftShell(
+        IntPtr world, 
+        int vertex_count, [In] Vector3[] vertices,
+        int triangle_count, [In] int[] trangles,
+        int threshold, Vector3 location, float scale, float mass);
 
     [DllImport("partix_dll")]
     public static extern IntPtr CreatePlane(

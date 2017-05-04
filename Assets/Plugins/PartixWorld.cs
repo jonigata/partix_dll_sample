@@ -25,12 +25,25 @@ public class PartixWorld : MonoBehaviour {
         PartixDll.UpdateWorld(nativeWorld, deltaTime);
     }
 
-    public IntPtr CreateSoftVolume(string tcf, Vector3 p, float scale) {
-        return PartixDll.CreateSoftVolume(nativeWorld, tcf, p, scale);
+    public IntPtr CreateSoftVolume(
+        string tcf, Vector3 p, float scale, float mass) {
+        return PartixDll.CreateSoftVolume(nativeWorld, tcf, p, scale, mass);
     }
 
-    public IntPtr CreateVehicle(string tcf, Vector3 p, float scale) {
-        return PartixDll.CreateVehicle(nativeWorld, tcf, p, scale);
+    public IntPtr CreateVehicle(
+        string tcf, Vector3 p, float scale, float mass) {
+        return PartixDll.CreateVehicle(nativeWorld, tcf, p, scale, mass);
+    }
+
+    public IntPtr CreateSoftShell(
+        int vertex_count, [In] Vector3[] vertices,
+        int triangle_count, [In] int[] triangles,
+        int threshold, Vector3 location, float scale, float mass) {
+        return PartixDll.CreateSoftShell(
+            nativeWorld, 
+            vertex_count, vertices,
+            triangle_count, triangles, 
+            threshold, location, scale, mass);
     }
 
     public IntPtr CreatePlane(Vector3 p, Vector3 n) {

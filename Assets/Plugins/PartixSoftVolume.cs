@@ -31,12 +31,14 @@ public class PartixSoftVolume : MonoBehaviour {
             nativePartixSoftVolume = world.CreateVehicle(
                 textAsset.text, 
                 transform.position, 
-                transform.lossyScale.x);
+                transform.lossyScale.x,
+                1.0f);
         } else {
             nativePartixSoftVolume = world.CreateSoftVolume(
                 textAsset.text, 
                 transform.position, 
-                transform.lossyScale.x);
+                transform.lossyScale.x,
+                1.0f);
         }
         world.GetWireFrameVertices(nativePartixSoftVolume);
         world.GetWireFrameIndices(nativePartixSoftVolume);
