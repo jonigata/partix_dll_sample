@@ -4,8 +4,6 @@ using System.Collections;
 using InControl;
 
 public class PigController : MonoBehaviour {
-    [SerializeField] PartixWorld world;
-    [SerializeField] PartixSoftVolume sv;
     [SerializeField] Vector3 accel;
     [SerializeField] Vector3 velocity;
     [SerializeField] float accelFactor = 2.0f;
@@ -13,6 +11,9 @@ public class PigController : MonoBehaviour {
     [SerializeField] Vector3 liftUp;
 
     const float epsilon = 1.0e-6f;
+
+    PartixWorld world;
+    PartixSoftVolume sv;
 
     void Awake() {
         world = FindObjectOfType<PartixWorld>();
@@ -45,7 +46,7 @@ public class PigController : MonoBehaviour {
 
         Vector3 bbw = bbmax - bbmin;
 
-        // weightê›íË
+        // weightË®≠ÂÆö
         for (int i = 0 ; i < vertices.Length ; i++) {
             Vector3 v = vertices[i];
             Vector3 np = new Vector3(
@@ -59,6 +60,7 @@ public class PigController : MonoBehaviour {
             w += z * y * 4.0f;
             loads[i].weight = w * 0.2f;
             loads[i].friction = w * 0.2f;
+            loads[i].fix_target = 0;
         }
         sv.SetPointLoads(loads);
     }
@@ -85,7 +87,7 @@ public class PigController : MonoBehaviour {
 
     void UpdateAccel(Vector3 input) {
 /*
-        // ã}ê˘âÒÇÕÉuÉåÅ[ÉL 
+        // ÊÄ•ÊóãÂõû„ÅØ„Éñ„É¨„Éº„Ç≠ 
         {
             Vector3 v0 = velocity.normalized;
             Vector3 v1 = v.normalized;
@@ -107,11 +109,11 @@ public class PigController : MonoBehaviour {
         }
         float len1 = input.magnitude;
 
-        // ã}åÉÇ»ïœâªñhé~
+        // ÊÄ•ÊøÄ„Å™Â§âÂåñÈò≤Ê≠¢
         float vr = world.deltaTime * 5.0f;
         float tr = world.deltaTime * 20.0f;
 
-        // êiçsï˚å¸ÇãÖñ ï‚äÆ
+        // ÈÄ≤Ë°åÊñπÂêë„ÇíÁêÉÈù¢Ë£úÂÆå
         if (epsilon < len1) {
             Quaternion q = Quaternion.FromToRotation(a, input);
             Quaternion qq = Quaternion.Slerp(Quaternion.identity, q, tr);
@@ -124,7 +126,7 @@ public class PigController : MonoBehaviour {
     Quaternion GetBalanceRotation() {
         var a = sv.vehicleAnalyzeData;
         
-        // épê®Ç™ïúå≥íÜÇæÇ¡ÇΩÇÁâΩÇ‡ÇµÇ»Ç¢
+        // ÂßøÂã¢„ÅåÂæ©ÂÖÉ‰∏≠„Å†„Å£„Åü„Çâ‰Ωï„ÇÇ„Åó„Å™„ÅÑ
         float pa = Vector3.Dot(Vector3.up, a.old_back);
         float ca = Vector3.Dot(Vector3.up, a.back);
         if (pa < ca) { return Quaternion.identity; }
@@ -133,12 +135,12 @@ public class PigController : MonoBehaviour {
             Vector3.zero, a.back, Vector3.up, a.front);
 
         if (a.left_grip == 0 && 0 < a.right_grip) {
-            // ç∂ë´Ç™ïÇÇ¢ÇƒÇÈÇ∆Ç´ÇÕâEÇ…ÇÕåXÇ©Ç»Ç¢
+            // Â∑¶Ë∂≥„ÅåÊµÆ„ÅÑ„Å¶„Çã„Å®„Åç„ÅØÂè≥„Å´„ÅØÂÇæ„Åã„Å™„ÅÑ
             if (0 < angle) {
                 return Quaternion.identity;
             }
         } else if (a.right_grip == 0 && 0 < a.left_grip) {
-            // âEë´Ç™ïÇÇ¢ÇƒÇÈÇ∆Ç´ÇÕç∂Ç…ÇÕåXÇ©Ç»Ç¢
+            // Âè≥Ë∂≥„ÅåÊµÆ„ÅÑ„Å¶„Çã„Å®„Åç„ÅØÂ∑¶„Å´„ÅØÂÇæ„Åã„Å™„ÅÑ
             if (angle < 0) {
                 return Quaternion.identity;
             }
@@ -154,7 +156,7 @@ public class PigController : MonoBehaviour {
     Quaternion GetTurningRotation() {
         var a = sv.vehicleAnalyzeData;
         
-        // épê®Ç™ïúå≥íÜÇæÇ¡ÇΩÇÁâΩÇ‡ÇµÇ»Ç¢
+        // ÂßøÂã¢„ÅåÂæ©ÂÖÉ‰∏≠„Å†„Å£„Åü„Çâ‰Ωï„ÇÇ„Åó„Å™„ÅÑ
         Vector3 an = accel.normalized;
         float pa = Vector3.Dot(an, a.old_front);
         float ca = Vector3.Dot(an, a.front);
