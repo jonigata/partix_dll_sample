@@ -6,8 +6,6 @@ using InControl;
 public class PigController : MonoBehaviour {
     [SerializeField] Vector3 accel;
     [SerializeField] Vector3 velocity;
-    [SerializeField] float accelFactor = 2.0f;
-    [SerializeField] ManualCamera manualCamera;
     [SerializeField] Vector3 liftUp;
 
     const float epsilon = 1.0e-6f;
@@ -57,7 +55,7 @@ public class PigController : MonoBehaviour {
             float w = 1.0f;
             float z = 1.0f - np.z;
             float y = 1.0f - np.y;
-            w += z * y * 4.0f;
+            w += z * z * y * 6.0f;
             loads[i].weight = w * 0.2f;
             loads[i].friction = w * 0.2f;
             loads[i].fix_target = 0;
@@ -68,24 +66,19 @@ public class PigController : MonoBehaviour {
     void Update() {
         if (!sv.Ready()) { return; }
         
-        Vector2 i = InputManager.ActiveDevice.LeftStick;
-        Vector3 a = new Vector3(i.x, 0, i.y);
-
-        a = manualCamera.rotateConsideringCamera(a);
-
         float grip = 
             (sv.vehicleAnalyzeData.front_grip + 
              sv.vehicleAnalyzeData.rear_grip) * 0.5f;
 
-        UpdateAccel(a);
         sv.AccelerateVehicle(
-            a * accelFactor * grip + a.magnitude * liftUp);
+            accel * sv.vehicleParameter.accel_factor * grip +
+            accel.magnitude * liftUp);
 
         sv.Rotate(GetBalanceRotation());
-        sv.Rotate(GetTurningRotation());
+        // sv.Rotate(GetTurningRotation());
     }
 
-    void UpdateAccel(Vector3 input) {
+    public void UpdateAccel(Vector3 input) {
 /*
         // 急旋回はブレーキ 
         {
@@ -100,7 +93,7 @@ public class PigController : MonoBehaviour {
         }
 */
 
-        Vector3 a = Vector3.zero;
+        Vector3 a = accel;
         float len0 = a.magnitude;
         if (epsilon < len0) {
             a = accel.normalized;
@@ -111,7 +104,7 @@ public class PigController : MonoBehaviour {
 
         // 急激な変化防止
         float vr = world.deltaTime * 5.0f;
-        float tr = world.deltaTime * 20.0f;
+        float tr = world.deltaTime * 5.0f;
 
         // 進行方向を球面補完
         if (epsilon < len1) {
@@ -183,6 +176,7 @@ public class PigController : MonoBehaviour {
         float angle;
         Vector3 axis;
         q.ToAngleAxis(out angle, out axis);
+        Debug.LogFormat("{0}, {1}", angle, max);
         if (max < angle) {
             return Quaternion.AngleAxis(max, axis);
         } else {

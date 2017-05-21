@@ -41,20 +41,19 @@ public class Flower : MonoBehaviour {
                 (v.x - bbmin.x) / bbw.x,
                 (v.y - bbmin.y) / bbw.y,
                 (v.z - bbmin.z) / bbw.z);
-            Debug.Log(loads[i].weight);
             loads[i].friction = 0;
             loads[i].fix_target = np.y < 0.1f ? 1 : 0;
         }
         sv.SetPointLoads(loads);
 
         EntityFeatures ef = new EntityFeatures();
-        ef.stretch_factor = 0.9f;
-        ef.restore_factor = 0.9f;
+        ef.stretch_factor = 0.1f;
+        ef.restore_factor = 0.8f;
         ef.alive = 1;
         ef.positive = 1;
         ef.influential = 1;
-        ef.auto_freezing = 0;
-        ef.frozen = 0;
+        ef.auto_freezing = 1;
+        ef.frozen = 1;
         sv.SetFeatures(ef);
     }
 
